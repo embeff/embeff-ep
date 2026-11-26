@@ -1,0 +1,112 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "embeff-ep"
+dynamic = ["version"]
+description = "Python client for the embeff ExecutionPlatform: Robot Framework library, pytest plugin and ep-config CLI"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "embeff GmbH", email = "support@embeff.com" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Framework :: Robot Framework :: Library",
+    "Framework :: Pytest",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Embedded Systems",
+]
+dependencies = [
+    "fastapi-websocket-rpc>=0.1.29",
+    "websockets>=14",
+]
+
+[project.optional-dependencies]
+robot = ["robotframework~=7.0"]
+pytest = ["pytest>=9"]
+all = ["embeff-ep[robot,pytest]"]
+
+[project.scripts]
+ep-config = "embeff_ep.cli.ep_config:main"
+
+# pytest loads the plugin in every run of an environment the package is installed in.
+[project.entry-points.pytest11]
+embeff_ep = "embeff_ep.pytest_plugin"
+
+[project.urls]
+Homepage = "https://embeff.com"
+Documentation = "https://ep-docs.embeff.com"
+Source = "https://github.com/embeff/embeff-ep"
+Changelog = "https://ep-docs.embeff.com/#/ReleaseNotes"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.4.0",
+    "pytest>=9",
+    "robotframework~=7.0",
+]
+
+[tool.hatch.version]
+path = "src/embeff_ep/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src/embeff_ep", "src/EPLibrary.py"]
+sources = ["src"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# https://docs.astral.sh/ruff/
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Rules: https://docs.astral.sh/ruff/rules/
+select = [
+    "E",    # pycodestyle
+    "F",    # Pyflakes
+    "W",    # Warning
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "T10",  # flake8-debugger
+    "EXE",  # flake8-executable
+    "ISC",  # flake8-implicit-str-concat
+    "G",    # flake8-logging-format
+    "PIE",  # flake8-pie
+    "T20",  # flake8-print
+    "PT",   # flake8-pytest-style
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "PGH",  # pygrep-hooks
+    "PLC",  # Pylint Convention
+    "PLE",  # Pylint Errors
+    "PLW",  # Pylint Warnings
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "E501",     # long lines are fine, as in the rest of the repo
+    "T201",     # print is how the CLI and the default reporter talk to the user
+    "ARG",      # Robot listener and pytest hook signatures are fixed by the frameworks
+    "RET503",   # implicit return None
+    "RET504",   # assignment before return
+    "RET505",   # else after return
+    "RET506",   # elif after raise
+    "PLC0415",  # optional dependencies are imported where they are needed
+    "PLW1641",  # Binary defines __eq__ only, like its server-side counterpart
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["PT009", "PT027"]  # unittest-style assertions are OK in test files
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
